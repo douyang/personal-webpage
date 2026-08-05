@@ -96,9 +96,58 @@ svg .hover_group path {
 #cs h1, #cs h2{
 	color: #FF7B7B;
 }
+#publications h1, #publications h2{
+	color: #09C3CC;
+}
 .section {
 	padding-top: 50px;
 	padding-bottom: 50px;
+}
+
+/*PUBLICATIONS*/
+.pub-intro {
+	font-family: Lora, serif;
+	margin: 20px 0 10px;
+}
+.pub-list {
+	list-style: none;
+	padding-left: 0;
+	margin-top: 20px;
+}
+.pub-list li {
+	padding: 18px 0;
+	border-bottom: 1px solid #E2E0DD;
+}
+.pub-list li:last-child {
+	border-bottom: none;
+}
+.pub-title {
+	display: block;
+	font-family: Lora, serif;
+	font-size: 1.1em;
+	font-weight: bold;
+}
+.pub-title a {
+	color: #2F303D;
+	border-bottom: 1px dotted #969491;
+}
+.pub-title a:hover {
+	color: #09C3CC;
+	border-bottom: 1px dotted #09C3CC;
+}
+.pub-venue {
+	display: block;
+	font-family: "franklin-gothic-urw", sans-serif;
+	font-size: 0.8em;
+	letter-spacing: 0.08em;
+	color: #969491;
+	margin: 4px 0;
+}
+.pub-desc {
+	display: block;
+	font-family: Lora, serif;
+	font-size: 0.95em;
+	color: #555;
 }
 .tile {
 	padding: 120% 10px 3px 10px;
