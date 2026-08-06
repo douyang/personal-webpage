@@ -99,6 +99,9 @@ svg .hover_group path {
 #publications h1, #publications h2{
 	color: #09C3CC;
 }
+#lab h1, #lab h2{
+	color: #09C3CC;
+}
 .section {
 	padding-top: 50px;
 	padding-bottom: 50px;
@@ -148,6 +151,35 @@ svg .hover_group path {
 	font-family: Lora, serif;
 	font-size: 0.95em;
 	color: #555;
+}
+
+/*LAB MEMBERS*/
+.member-list {
+	list-style: none;
+	padding-left: 0;
+	margin-top: 20px;
+}
+.member-list li {
+	padding: 14px 0;
+	border-bottom: 1px solid #E2E0DD;
+}
+.member-list li:last-child {
+	border-bottom: none;
+}
+.member-name {
+	display: block;
+	font-family: Lora, serif;
+	font-size: 1.1em;
+	font-weight: bold;
+	color: #2F303D;
+}
+.member-role {
+	display: block;
+	font-family: "franklin-gothic-urw", sans-serif;
+	font-size: 0.8em;
+	letter-spacing: 0.08em;
+	color: #969491;
+	margin-top: 4px;
 }
 .tile {
 	padding: 120% 10px 3px 10px;
