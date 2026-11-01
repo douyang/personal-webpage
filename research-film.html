@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reading the Heart — Ouyang Lab</title>
+<meta name="description" content="A self-playing overview of the Ouyang Lab's cardiovascular-AI research. Bar heights are the number of echocardiogram videos used to train each model — view- and quality-filtered training sets, not full study counts. Task coverage is mapped to the ASE standardized echo report and its assessment &amp; quantification guidelines; colored items are published or released as open code, gray items are open gaps not yet automated.">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#fafaf8; --bg2:#f4f2ee; --panel:#ffffff; --panel2:#f6f4f0;
+  --line:#e2e0dc; --grid:rgba(15,118,110,.05);
+  --ink:#1e293b; --muted:#475569; --dim:#94a3b8;
+  --heart:#8c1515; --heart-soft:rgba(140,21,21,.10);
+  --pulse:#0f766e; --pulse-soft:rgba(15,118,110,.10);
+  --amber:#a16207; --amber-soft:rgba(161,98,7,.12);
+  --todo:#cbd5e1; --todo-ink:#94a3b8;
+  --disp:'Source Serif 4',Georgia,serif;
+  --body:'Source Sans 3',system-ui,-apple-system,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:
+  radial-gradient(1100px 640px at 82% -10%, #f0ede6 0%, transparent 58%),
+  radial-gradient(900px 560px at 6% 112%, #f2ede4 0%, transparent 55%),
+  var(--bg);
+  color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;
+  min-height:100%;}
+.wrap{max-width:1040px;margin:0 auto;padding-block:26px;padding-left:16px;padding-right:16px;}
+
+/* ---- masthead ---- */
+.mast{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.mast .dot{width:9px;height:9px;border-radius:50%;background:var(--heart);
+  box-shadow:0 0 0 4px var(--heart-soft);animation:beat 1.15s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}18%{transform:scale(1.5)}36%{transform:scale(1)}}
+.mast h1{font-family:var(--mono);font-weight:500;font-size:.82rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);margin:0}
+.mast .spacer{flex:1}
+.mast .tag{font-family:var(--mono);font-size:.72rem;color:var(--dim);letter-spacing:.08em}
+
+/* ---- player / stage ---- */
+.player{position:relative}
+.stage{position:relative;aspect-ratio:16/9;width:100%;border-radius:16px;overflow:hidden;
+  background:linear-gradient(180deg,#ffffff,#f4f1ea);
+  border:1px solid var(--line);
+  box-shadow:0 24px 60px -32px rgba(60,40,20,.35), inset 0 1px 0 rgba(255,255,255,.6)}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:.9}
+.grid-overlay{position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:46px 46px;mask-image:radial-gradient(120% 100% at 50% 40%,#000 55%,transparent 100%)}
+.vignette{position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 120px 26px rgba(90,70,40,.05)}
+
+/* progress + scene tick */
+.pbar{position:absolute;top:0;left:0;right:0;height:3px;background:rgba(30,41,59,.07);z-index:6}
+.pbar i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--pulse),var(--heart))}
+.scene-tag{position:absolute;top:14px;left:16px;z-index:6;font-family:var(--mono);font-size:.68rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.scene-count{position:absolute;top:14px;right:16px;z-index:6;font-family:var(--mono);font-size:.68rem;
+  letter-spacing:.12em;color:var(--dim)}
+
+/* scenes */
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(20px,5.2vw,60px);opacity:0;visibility:hidden;transition:opacity .5s ease}
+.scene[data-on="1"]{opacity:1;visibility:visible}
+.scene[data-tag="Coverage"]{justify-content:flex-start;overflow-y:auto;scrollbar-width:none;
+  padding-top:clamp(30px,4vw,38px);padding-bottom:clamp(10px,1.6vw,18px)}
+.scene[data-tag="Coverage"]::-webkit-scrollbar{display:none}
+.scene[data-tag="Coverage"] .chip{font-size:.56rem;padding:2px 5px}
+.scene[data-tag="Coverage"] .dh{font-size:clamp(.8rem,1.45vw,.96rem)}
+.eyebrow{font-family:var(--mono);font-size:clamp(.62rem,1.5vw,.78rem);letter-spacing:.2em;
+  text-transform:uppercase;color:var(--pulse);margin:0 0 clamp(10px,2vw,18px)}
+.h-xl{font-family:var(--disp);font-weight:700;line-height:1.02;letter-spacing:-.01em;
+  font-size:clamp(2.1rem,7vw,4.4rem);margin:0;text-wrap:balance}
+.h-lg{font-family:var(--disp);font-weight:700;line-height:1.06;letter-spacing:-.01em;
+  font-size:clamp(1.5rem,4.6vw,2.85rem);margin:0;text-wrap:balance}
+.lede{color:var(--muted);font-size:clamp(.95rem,2.1vw,1.22rem);max-width:54ch;margin:clamp(12px,2.2vw,20px) 0 0;line-height:1.5}
+.heart-word{color:var(--heart)}
+.cyan-word{color:var(--pulse)}
+
+/* staged reveal — resting state is fully visible; entrance plays when a scene goes live */
+.rise{opacity:1;transform:none}
+.scene[data-on="1"] .rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.scene[data-on="1"] .rise.d1{animation-delay:.10s}
+.scene[data-on="1"] .rise.d2{animation-delay:.24s}
+.scene[data-on="1"] .rise.d3{animation-delay:.40s}
+.scene[data-on="1"] .rise.d4{animation-delay:.58s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* pillars */
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,1.8vw,18px);margin-top:clamp(16px,3vw,28px)}
+.pillar{border:1px solid var(--line);border-radius:12px;padding:clamp(12px,1.8vw,20px);
+  background:linear-gradient(180deg,#ffffff,#faf8f3)}
+.pillar .k{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;color:var(--pulse);text-transform:uppercase}
+.pillar h3{font-family:var(--disp);font-weight:700;font-size:clamp(1.05rem,2.4vw,1.5rem);margin:.5rem 0 .35rem;line-height:1.08}
+.pillar p{margin:0;color:var(--muted);font-size:clamp(.82rem,1.6vw,.98rem);line-height:1.45}
+.pillar:nth-child(2) .k{color:var(--heart)}
+.pillar:nth-child(3) .k{color:var(--amber)}
+
+/* timeline */
+.tl{position:relative;margin-top:clamp(14px,2.4vw,22px)}
+.tl-rail{position:absolute;left:0;right:0;top:14px;height:2px;background:var(--line)}
+.tl-rail i{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,var(--pulse),var(--heart));transition:width .1s linear}
+.tl-row{display:grid;grid-template-columns:repeat(6,1fr);gap:clamp(6px,1.2vw,14px);position:relative}
+.mile{position:relative;padding-top:30px;opacity:.32;transform:translateY(6px);transition:opacity .45s ease,transform .45s ease}
+.mile.on{opacity:1;transform:none}
+.mile::before{content:"";position:absolute;top:9px;left:0;width:12px;height:12px;border-radius:50%;
+  background:#fff;border:2px solid var(--dim);transition:border-color .3s,background .3s,box-shadow .3s}
+.mile.on::before{border-color:var(--heart);background:var(--heart);box-shadow:0 0 0 5px var(--heart-soft)}
+.mile .yr{font-family:var(--mono);font-weight:600;font-size:clamp(.85rem,1.9vw,1.15rem);color:var(--ink)}
+.mile .ti{font-size:clamp(.72rem,1.35vw,.9rem);color:var(--muted);line-height:1.3;margin-top:3px}
+.mile .vn{display:inline-block;margin-top:6px;font-family:var(--mono);font-size:.62rem;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--pulse);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+
+/* data-scale chart (vertical bars) */
+.chartwrap{margin-top:clamp(8px,1.6vw,16px)}
+.vbhost{width:100%}
+.vbchart{width:100%;height:auto;display:block}
+.vbchart .grid{stroke:rgba(30,41,59,.10);stroke-width:1}
+.vbchart .gl{fill:var(--dim);font-family:var(--mono)}
+.vbchart .bx{fill:var(--muted);font-family:var(--disp);font-weight:600}
+.vbchart .bv{fill:var(--ink);font-family:var(--mono);font-weight:500}
+.vbchart .byr{fill:var(--dim);font-family:var(--mono)}
+.counter{font-family:var(--disp);font-weight:700;color:var(--amber);font-variant-numeric:tabular-nums}
+.unit{color:var(--muted);font-weight:700}
+.scrange{font-family:var(--body);color:var(--muted);font-size:clamp(.8rem,1.7vw,1rem);margin:6px 0 0;line-height:1.4;max-width:60ch}
+
+/* task coverage — ASE framework */
+.cov{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(6px,1vw,10px);margin-top:clamp(6px,1.2vw,11px)}
+.dom.wide{grid-column:1/-1}
+.dom{border:1px solid var(--line);border-radius:11px;padding:clamp(6px,1vw,10px);background:var(--panel);
+  opacity:.34;transform:translateY(6px);transition:opacity .5s ease,transform .5s ease}
+.dom.on{opacity:1;transform:none}
+.dom .dh{font-family:var(--disp);font-weight:600;font-size:clamp(.84rem,1.55vw,1.02rem);color:var(--ink);line-height:1.08}
+.dom .ase{font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.chip{font-family:var(--mono);font-size:.6rem;letter-spacing:.01em;border-radius:6px;padding:2px 6px;
+  display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);background:#fff;color:var(--muted);
+  transition:filter .15s ease}
+a.chip{text-decoration:none;cursor:pointer}
+.chip.done{background:var(--heart);border-color:var(--heart);color:#fff}
+.chip.done:hover{filter:brightness(1.18)}
+.chip.done:focus-visible{outline:2px solid var(--pulse);outline-offset:2px}
+.chip.todo{background:transparent;border:1px dashed var(--todo);color:var(--todo-ink)}
+.covleg{display:flex;gap:16px;flex-wrap:wrap;margin-top:clamp(10px,1.8vw,16px);font-family:var(--mono);
+  font-size:.64rem;letter-spacing:.05em;color:var(--muted);text-transform:uppercase}
+.covleg span{display:inline-flex;align-items:center;gap:7px}
+.covleg .sw{width:12px;height:12px;border-radius:4px}
+.covleg .sw.done{background:var(--heart)}
+.covleg .sw.todo{background:transparent;border:1px dashed var(--todo)}
+
+/* impact close */
+.impact{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(12px,2vw,22px);margin-top:clamp(14px,2.6vw,24px)}
+.stat .big{font-family:var(--disp);font-weight:700;font-size:clamp(1.45rem,3.6vw,2.3rem);line-height:1.02;letter-spacing:-.01em}
+.stat:nth-child(1) .big{color:var(--heart)} .stat:nth-child(2) .big{color:var(--pulse)} .stat:nth-child(3) .big{color:var(--amber)} .stat:nth-child(4) .big{color:var(--heart)}
+.stat .cap{color:var(--muted);font-size:clamp(.78rem,1.5vw,.95rem);margin-top:8px;line-height:1.35}
+.close-line{font-family:var(--mono);color:var(--dim);letter-spacing:.08em;margin-top:clamp(18px,3vw,30px);font-size:clamp(.72rem,1.5vw,.9rem)}
+.close-line b{color:var(--pulse);font-weight:600}
+
+/* ---- controls ---- */
+.controls{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--panel);color:var(--ink);
+  border:1px solid var(--line);border-radius:9px;padding:9px 14px;font-family:var(--body);font-weight:600;
+  font-size:.9rem;cursor:pointer;transition:border-color .2s,background .2s}
+.btn:hover{border-color:var(--pulse);background:var(--panel2)}
+.btn:focus-visible{outline:2px solid var(--pulse);outline-offset:2px}
+.btn svg{width:15px;height:15px;fill:currentColor}
+.btn.muted{color:var(--dim)}
+.dots{display:flex;gap:9px;align-items:center;margin-left:auto}
+.dots button{width:11px;height:11px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;padding:0;transition:background .2s,border-color .2s,transform .2s}
+.dots button[aria-current="true"]{background:var(--heart);border-color:var(--heart);transform:scale(1.15)}
+.dots button:hover{border-color:var(--pulse)}
+.dots button:focus-visible{outline:2px solid var(--pulse);outline-offset:2px}
+.time{font-family:var(--mono);font-size:.76rem;color:var(--dim);min-width:74px}
+.foot{margin-top:16px;color:var(--dim);font-size:.78rem;line-height:1.5;font-family:var(--mono)}
+.foot a{color:var(--muted)}
+
+/* echo-101 facts */
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(8px,1.4vw,14px);margin-top:clamp(12px,2.4vw,20px)}
+.fact{border:1px solid var(--line);border-radius:11px;padding:clamp(9px,1.5vw,15px);background:#fff}
+.fact .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--pulse)}
+.fact h4{font-family:var(--disp);font-weight:700;font-size:clamp(.92rem,1.8vw,1.12rem);margin:.35rem 0 .22rem;line-height:1.08}
+.fact p{margin:0;color:var(--muted);font-size:clamp(.74rem,1.35vw,.88rem);line-height:1.38}
+/* open-echonet stats */
+.openstats{display:flex;gap:clamp(14px,4vw,40px);flex-wrap:wrap;margin-top:clamp(14px,2.6vw,22px)}
+.ostat .big{font-family:var(--disp);font-weight:700;font-size:clamp(1.5rem,4.4vw,2.7rem);color:var(--pulse);line-height:1;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.ostat:nth-child(2) .big{color:var(--heart)} .ostat:nth-child(3) .big{color:var(--amber)}
+.ostat .cap{color:var(--muted);font-size:clamp(.74rem,1.35vw,.9rem);margin-top:7px;max-width:24ch;line-height:1.35}
+.mono-line{font-family:var(--mono);font-size:clamp(.72rem,1.5vw,.9rem);color:var(--dim);letter-spacing:.03em;margin-top:clamp(12px,2.2vw,18px)}
+.mono-line b{color:var(--pulse);font-weight:500}
+
+@media(max-width:640px){
+  .stage{aspect-ratio:4/5}
+  .pillars{grid-template-columns:1fr}
+  .tl-row{grid-template-columns:repeat(3,1fr);row-gap:20px}
+  .cov{grid-template-columns:1fr}
+  .facts{grid-template-columns:repeat(2,1fr)}
+  .impact{grid-template-columns:repeat(2,1fr);gap:12px}
+  .tl-rail{display:none}
+  .scene{justify-content:flex-start;padding-top:44px;overflow-y:auto}
+}
+@media(max-width:430px){
+  .stage{aspect-ratio:3/4}
+  .h-lg{font-size:clamp(1.35rem,6.6vw,1.8rem)}
+}
+@media(prefers-reduced-motion:reduce){
+  .mast .dot{animation:none}
+  .scene[data-on="1"] .rise{animation:none;opacity:1;transform:none}
+  .rise{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="player">
+    <div class="stage" id="stage" tabindex="0" aria-label="Ouyang Lab research film. Use arrow keys to move between scenes.">
+      <canvas id="wave" aria-hidden="true"></canvas>
+      <div class="grid-overlay" aria-hidden="true"></div>
+      <div class="vignette" aria-hidden="true"></div>
+      <div class="pbar" aria-hidden="true"><i id="pb"></i></div>
+
+      <!-- 0 · WHAT IS ECHOCARDIOGRAPHY (static — complete at rest for the first frame) -->
+      <section class="scene" data-dur="7000" data-tag="Echo 101">
+        <p class="eyebrow">What is echocardiography?</p>
+        <h2 class="h-lg">An <span class="cyan-word">ultrasound</span> of the beating heart.</h2>
+        <div class="facts">
+          <div class="fact"><div class="k">Pump</div><h4>Function</h4><p>How strongly the heart squeezes — ejection fraction.</p></div>
+          <div class="fact"><div class="k">Valves</div><h4>Flow</h4><p>Leak and narrowing across all four valves.</p></div>
+          <div class="fact"><div class="k">Structure</div><h4>Anatomy</h4><p>Chambers, wall thickness, and muscle disease.</p></div>
+          <div class="fact"><div class="k">Bedside</div><h4>Point-of-care</h4><p>Portable ultrasound, anywhere a patient is.</p></div>
+        </div>
+        <p class="lede">The most common cardiac imaging test — millions of studies each year, every one dozens of videos a clinician must review.</p>
+      </section>
+
+      <!-- 2 · DIRECTION -->
+      <section class="scene" data-dur="6400" data-tag="Direction">
+        <p class="eyebrow rise">Research direction</p>
+        <h2 class="h-lg rise d1">Cardiac ultrasound for <span class="heart-word">more patients, in more places</span>.</h2>
+        <div class="pillars">
+          <div class="pillar rise d2"><div class="k">01 · Develop</div><h3>Precision phenotyping</h3><p>Spatiotemporal neural networks that measure structure and function from raw echo video.</p></div>
+          <div class="pillar rise d3"><div class="k">02 · Understand</div><h3>Interpretable AI</h3><p>Foundation models clinicians can inspect, trust, and correct.</p></div>
+          <div class="pillar rise d4"><div class="k">03 · Deploy</div><h3>Trials → implementation</h3><p>Randomized trials, FDA clearance, and health-system deployment.</p></div>
+        </div>
+      </section>
+
+      <!-- 4 · TIMELINE -->
+      <section class="scene" data-dur="8600" data-tag="Milestones">
+        <p class="eyebrow rise">Progress, year by year</p>
+        <h2 class="h-lg rise d1" style="font-size:clamp(1.25rem,3.5vw,2.05rem)">From one measurement to the whole study.</h2>
+        <div class="tl">
+          <div class="tl-rail"><i id="tlFill"></i></div>
+          <div class="tl-row" id="tlRow"></div>
+        </div>
+      </section>
+
+      <!-- 5 · DATA SCALE -->
+      <section class="scene" data-dur="8200" data-tag="Scale">
+        <p class="eyebrow rise">Increasing the scale of training data · log scale</p>
+        <h2 class="h-lg rise d1"><span class="counter" id="scaleNum">7,169</span> <span class="unit">videos</span></h2>
+        <p class="scrange rise d1">Per-model training data — from EchoNet-RV to EchoPrime, across 12 studies (2020–2026).</p>
+        <div class="chartwrap rise d2"><div id="scaleChart" class="vbhost"></div></div>
+      </section>
+
+      <!-- 6 · TASK COVERAGE (ASE framework) -->
+      <section class="scene" data-dur="9000" data-tag="Coverage">
+        <p class="eyebrow rise">What our models cover — and the open gaps</p>
+        <h2 class="h-lg rise d1" style="font-size:clamp(1.1rem,2.9vw,1.6rem)">A systematic approach for the whole echo exam.</h2>
+        <div class="covleg rise d1" style="margin:5px 0 0">
+          <span><i class="sw done"></i>Published / built — click to open</span>
+          <span><i class="sw todo"></i>On the roadmap</span>
+        </div>
+        <div class="cov" id="covGrid"></div>
+      </section>
+
+      <!-- CLOSE · open science → deployment (merged with the EchoNet-open story) -->
+      <section class="scene" data-dur="8400" data-tag="Impact">
+        <p class="eyebrow rise">From open science to the clinic</p>
+        <h2 class="h-lg rise d1">Echo AI that reaches the <span class="heart-word">patient</span>.</h2>
+        <p class="lede rise d2">Open datasets and models that reproduce expert measurements and reveal subclinical disease — proven in randomized trials, FDA-cleared, and deployed in routine care.</p>
+        <div class="impact">
+          <div class="stat rise d2"><div class="big">EchoNet</div><div class="cap">First large echo datasets &amp; code, open-source — a global benchmark (github.com/echonet)</div></div>
+          <div class="stat rise d2"><div class="big">1st</div><div class="cap">First blinded randomized clinical trial of AI in cardiology (2023)</div></div>
+          <div class="stat rise d3"><div class="big">FDA</div><div class="cap">510(k)-cleared LVEF; Breakthrough-designated cardiac amyloid</div></div>
+          <div class="stat rise d3"><div class="big">Papers</div><div class="cap">High-impact results in Nature, NEJM AI, JACC &amp; Circulation</div></div>
+        </div>
+        <p class="close-line rise d4">OUYANG LAB · <b>development → deployment → implementation</b> · douyang.github.io</p>
+      </section>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="playBtn" aria-label="Pause"><svg id="playIco" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg><span id="playTxt">Pause</span></button>
+      <button class="btn" id="replayBtn" aria-label="Replay from start"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5V2L7 7l5 5V8a5 5 0 1 1-5 5H5a7 7 0 1 0 7-8z"/></svg>Replay</button>
+      <button class="btn" id="muteBtn" aria-label="Mute music" aria-pressed="false"><svg id="muteIco" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16 8.6a4 4 0 0 1 0 6.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span id="muteTxt">Music</span></button>
+      <div class="time" id="timeLbl">0:00 / 0:00</div>
+      <div class="dots" id="dots" role="tablist" aria-label="Scenes"></div>
+    </div>
+  </div>
+
+  <p class="foot" hidden data-role="description">A self-playing overview of the Ouyang Lab's cardiovascular-AI research. Bar heights are the number of echocardiogram videos used to train each model — view- and quality-filtered training sets, not full study counts. Task coverage is mapped to the ASE standardized echo report and its assessment &amp; quantification guidelines; colored items are published or released as open code, gray items are open gaps not yet automated.</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- data ---------- */
+  var MILES = [
+    {yr:'2020', ti:'EchoNet-Dynamic: beat-to-beat ejection fraction', vn:'Open source'},
+    {yr:'2021', ti:'LV hypertrophy & cardiac amyloid phenotyping', vn:'Phenotyping'},
+    {yr:'2023', ti:'First blinded randomized trial of AI in cardiology', vn:'Clinical trial'},
+    {yr:'2024', ti:'EchoCLIP vision–language foundation model', vn:'Foundation model'},
+    {yr:'2025', ti:'EchoPrime full-study interpretation; FDA clearances', vn:'FDA cleared'},
+    {yr:'2026', ti:'Opportunistic multi-organ screening; whole-study readout', vn:'Ongoing'}
+  ];
+
+  /* Videos used to develop each model — from the source publication. Sorted smallest-first (rising staircase). */
+  var SCALE = [
+    {n:7169,     name:'EchoNet-RV',          disp:'7,169',   yr:2026},
+    {n:7643,     name:'EchoNet-Pediatric',   disp:'7,643',   yr:2023},
+    {n:10030,    name:'EchoNet-Dynamic',     disp:'10,030',  yr:2020},
+    {n:11419,    name:'EchoNet-Liver',       disp:'11,419',  yr:2025},
+    {n:17802,    name:'EchoNet-LVH',         disp:'17,802',  yr:2022},
+    {n:20604,    name:'EchoNet-MR',          disp:'20,604',  yr:2024},
+    {n:47638,    name:'EchoNet-AR',          disp:'47,638',  yr:2025},
+    {n:57701,    name:'EchoNet-TR',          disp:'57,701',  yr:2025},
+    {n:70066,    name:'EchoNet-Labs',        disp:'70,066',  yr:2021},
+    {n:1032975,  name:'EchoCLIP',            disp:'1.03M',   yr:2024},
+    {n:1139533,  name:'EchoNet-Pericardium', disp:'1.14M',   yr:2025},
+    {n:12124168, name:'EchoPrime',           disp:'12.1M',   yr:2025}
+  ];
+  function tierColor(n){ return n>=5000000 ? '#8c1515' : (n>=1000000 ? '#a16207' : '#0f766e'); }
+  var VNS='http://www.w3.org/2000/svg';
+  function vEl(n,a){var e=document.createElementNS(VNS,n);for(var k in a){if(a[k]!=null)e.setAttribute(k,a[k]);}return e;}
+  var scaleRO=null, lastVBW=0;
+  function renderVBar(animate){
+    var host=document.getElementById('scaleChart'); if(!host) return;
+    var W=Math.max(300, Math.round(host.clientWidth||900));
+    lastVBW=W;
+    var wide=W>=680, mid=W>=460;
+    var H=Math.round(Math.min(Math.max(W*0.52,260),380));
+    var L=46, R=14, top=26;
+    var glFs=wide?12:11, nameFs=wide?13:(mid?11.5:10), valFs=wide?12:10.5;
+    var rot=wide?-32:(mid?-45:-58);
+    var maxChars=0; SCALE.forEach(function(p){ if(p.name.length>maxChars) maxChars=p.name.length; });
+    var bottom=Math.min(Math.round(maxChars*nameFs*0.56*Math.sin(Math.abs(rot)*Math.PI/180))+24, Math.round(H*0.55));
+    var plotH=H-top-bottom, baseY=top+plotH;
+    var n=SCALE.length, slot=(W-L-R)/n, barW=Math.min(slot*0.62,54);
+    var lx0=Math.log10(3000), lx1=Math.log10(16000000);
+    function Yv(v){ return baseY-(Math.log10(v)-lx0)/(lx1-lx0)*plotH; }
+    var showVal=slot>=42;
+    host.innerHTML='';
+    var svg=vEl('svg',{viewBox:'0 0 '+W+' '+H,'class':'vbchart',role:'img',
+      'aria-label':'Bar chart of echocardiogram videos used to develop 12 echo models on a log scale, rising from 7,169 (EchoNet-RV) to 12.1 million (EchoPrime).'});
+    [[1e4,'10K'],[1e5,'100K'],[1e6,'1M'],[1e7,'10M']].forEach(function(g){
+      var gy=Yv(g[0]);
+      svg.appendChild(vEl('line',{'class':'grid',x1:L,x2:W-R,y1:gy,y2:gy}));
+      var t=vEl('text',{'class':'gl',x:L-6,y:gy+3,'text-anchor':'end','font-size':glFs});t.textContent=g[1];svg.appendChild(t);
+    });
+    var bars=[];
+    SCALE.forEach(function(p,i){
+      var cx=L+slot*(i+0.5), byTop=Yv(p.n), bh=Math.max(1,baseY-byTop), col=tierColor(p.n);
+      var rect=vEl('rect',{x:cx-barW/2,y:byTop,width:barW,height:bh,rx:3,fill:col,opacity:.92});
+      svg.appendChild(rect);
+      var vt=null;
+      if(showVal){ vt=vEl('text',{'class':'bv',x:cx,y:byTop-6,'text-anchor':'middle','font-size':valFs,opacity:(reduce||!animate)?1:0});vt.textContent=p.disp;svg.appendChild(vt); }
+      var by=baseY+14, lbl=p.name;
+      var nm=vEl('text',{'class':'bx',x:cx,y:by,'text-anchor':'end','font-size':nameFs,transform:'rotate('+rot+' '+cx+' '+by+')'});
+      nm.textContent=lbl; svg.appendChild(nm);
+      bars.push({rect:rect,vt:vt,cx:cx,baseY:baseY});
+    });
+    host.appendChild(svg);
+    if(reduce||!animate) return;
+    bars.forEach(function(o,i){
+      o.rect.style.transformOrigin=o.cx+'px '+o.baseY+'px';
+      o.rect.style.transform='scaleY(0)';
+      o.rect.getBoundingClientRect();
+      o.rect.style.transition='transform .8s cubic-bezier(.2,.7,.2,1) '+(i*0.06)+'s';
+      o.rect.style.transform='scaleY(1)';
+      if(o.vt){ o.vt.style.transition='opacity .4s ease'; setTimeout(function(){ o.vt.setAttribute('opacity','1'); }, i*60+560); }
+    });
+  }
+  function ensureScaleRO(){
+    if(scaleRO || !window.ResizeObserver) return;
+    var host=document.getElementById('scaleChart'); if(!host) return;
+    scaleRO=new ResizeObserver(function(){
+      var host2=document.getElementById('scaleChart'); if(!host2) return;
+      if(Math.max(300,Math.round(host2.clientWidth))===lastVBW) return;
+      renderVBar(false);
+    });
+    scaleRO.observe(host);
+  }
+
+  /* Task coverage by cardiac domain. Boxes overlap: one model can check items in
+     several sections. Each done box links to its paper / repo (hover shows the
+     reference); gray boxes are open gaps. Grounded in published work + github.com/echonet. */
+  var REF = {
+    dynamic:{u:'https://www.nature.com/articles/s41586-020-2145-8', c:'EchoNet-Dynamic — Nature 2020'},
+    lvh:{u:'https://jamanetwork.com/journals/jamacardiology/fullarticle/2789370', c:'EchoNet-LVH — JAMA Cardiology 2022'},
+    meas:{u:'https://www.jacc.org/doi/10.1016/j.jacc.2025.07.053', c:'EchoNet-Measurements — JACC 2025'},
+    seg:{u:'https://github.com/echonet/measurements', c:'echonet/measurements — Segmentation module'},
+    rv:{u:'https://github.com/echonet/RV', c:'EchoNet-RV — github.com/echonet/RV'},
+    diast:{u:'https://github.com/echonet/diastology', c:'echonet/diastology — 2016 ASE grading'},
+    strain:{u:'https://github.com/echonet/strain', c:'echonet/strain — LV global longitudinal strain'},
+    depth:{u:'https://github.com/echonet/depthmap', c:'echonet/depthmap — 3D LV volume'},
+    prime:{u:'https://www.nature.com/articles/s41586-025-09850-x', c:'EchoPrime — Nature 2025'},
+    mr:{u:'https://www.ahajournals.org/doi/10.1161/CIRCULATIONAHA.124.069047', c:'EchoNet-MR — Circulation 2024'},
+    tr:{u:'https://pubmed.ncbi.nlm.nih.gov/40238103/', c:'EchoNet-TR — JAMA Cardiology 2025'},
+    ar:{u:'https://www.medrxiv.org/content/10.1101/2025.03.18.25323918v1', c:'EchoNet-AR — medRxiv 2025'},
+    as:{u:'https://github.com/echonet/AS', c:'EchoNet-AS — github.com/echonet/AS'},
+    ms:{u:'https://github.com/echonet', c:'EchoNet-MS — github.com/echonet'},
+    peri:{u:'https://academic.oup.com/ehjdh/article/6/6/1216/8262550', c:'EchoNet-Pericardium — EHJ Digital Health 2025'},
+    clip:{u:'https://www.nature.com/articles/s41591-024-02959-y', c:'EchoCLIP — Nature Medicine 2024'},
+    ecg:{u:'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12088713/', c:'ECG deep learning for coronary disease — EHJ Digital Health 2025'},
+    liver:{u:'https://ai.nejm.org/doi/abs/10.1056/AIoa2400948', c:'EchoNet-Liver — NEJM AI 2025'},
+    aaa:{u:'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11480325/', c:'Abdominal aortic aneurysm screening — npj Digital Medicine 2024'},
+    rct:{u:'https://www.nature.com/articles/s41586-023-05947-3', c:'Blinded randomized trial of AI — Nature 2023'},
+    poc:{u:'https://doi.org/10.1016/j.jemermed.2023.02.005', c:'Point-of-care echo in the ED — J Emerg Med 2024'},
+    bias:{u:'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10883605/', c:'Machine learning & bias in imaging — Circ Cardiovasc Imaging 2024'},
+    confound:{u:'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9780355/', c:'Confounders in AI demographics — npj Digital Medicine 2022'},
+    onc:{u:'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9360492/', c:'AI in cardio-oncology — Front Cardiovasc Med 2022'},
+    aging:{u:'https://doi.org/10.1161/CIRCRESAHA.121.319902', c:'Sex differences in cardiovascular aging — Circ Res 2022'}
+  };
+  var DOMAINS = [
+    {d:'Chambers', items:[
+      {c:'LV segmentation', r:'dynamic'},
+      {c:'LV size & walls', r:'lvh'},
+      {c:'LA size', r:'meas'},
+      {c:'RV size + seg.', r:'rv'},
+      {c:'LA / RA area', r:'seg'},
+      {c:'3D volumes'}
+    ]},
+    {d:'Chamber assessment', items:[
+      {c:'LVEF', r:'dynamic'},
+      {c:'LV volumes', r:'dynamic'},
+      {c:'RV function', r:'rv'},
+      {c:'Diastolic grade', r:'diast'},
+      {c:'GLS strain', r:'strain'},
+      {c:'Regional WMA'},
+      {c:'TAPSE'},
+      {c:'E/e′ pressure'}
+    ]},
+    {d:'Valves', items:[
+      {c:'Mitral regurg', r:'mr'},
+      {c:'Tricuspid regurg', r:'tr'},
+      {c:'Aortic regurg', r:'ar'},
+      {c:'Aortic stenosis', r:'as'},
+      {c:'Mitral stenosis', r:'ms'},
+      {c:'Peak velocities', r:'meas'},
+      {c:'Pulmonic regurg'},
+      {c:'Valve area (AVA/MVA)'},
+      {c:'EROA / RegVol'}
+    ]},
+    {d:'Disease, foundation & whole-study', items:[
+      {c:'Amyloid', r:'lvh'},
+      {c:'HCM', r:'lvh'},
+      {c:'Pericardial eff.', r:'peri'},
+      {c:'EchoCLIP', r:'clip'},
+      {c:'EchoPrime report', r:'prime'},
+      {c:'ECG models', r:'ecg'},
+      {c:'View & quality', r:'prime'},
+      {c:'Masses'},
+      {c:'Congenital'}
+    ]},
+    {d:'Beyond the heart', items:[
+      {c:'Liver disease', r:'liver'},
+      {c:'Aortic aneurysm', r:'aaa'}
+    ]},
+    {d:'Trials & point-of-care', items:[
+      {c:'Randomized trial', r:'rct'},
+      {c:'POC echo (ED)', r:'poc'}
+    ]},
+    {d:'Trustworthy AI & other', items:[
+      {c:'Imaging bias', r:'bias'},
+      {c:'AI confounders', r:'confound'},
+      {c:'Cardio-oncology', r:'onc'},
+      {c:'Vascular aging', r:'aging'}
+    ]},
+    {d:'Measurements & segmentation', ase:'quantification', wide:true, items:[
+      {c:'LVEF', r:'dynamic'},
+      {c:'LV volumes (EDV/ESV)', r:'dynamic'},
+      {c:'LV segmentation', r:'dynamic'},
+      {c:'IVS / LVID / LVPW', r:'lvh'},
+      {c:'LV mass', r:'lvh'},
+      {c:'LA diameter', r:'meas'},
+      {c:'LA volume (LAVi)', r:'diast'},
+      {c:'Aortic root', r:'meas'},
+      {c:'Ascending aorta', r:'meas'},
+      {c:'PA diameter', r:'meas'},
+      {c:'RV basal diameter', r:'meas'},
+      {c:'IVC diameter', r:'meas'},
+      {c:'RV segmentation + RVFAC', r:'rv'},
+      {c:'LA / RA area', r:'seg'},
+      {c:'Peak velocities: AV·TR·MR·LVOT', r:'meas'},
+      {c:'Tissue Doppler e′ (septal·lateral)', r:'meas'},
+      {c:'Mitral E / A', r:'meas'},
+      {c:'VTI: MV·AV·LVOT·RVOT·PV', r:'seg'},
+      {c:'GLS strain', r:'strain'},
+      {c:'3D LV volume', r:'depth'},
+      {c:'TAPSE'},
+      {c:'RV free-wall strain'},
+      {c:'E/e′ ratio'},
+      {c:'PASP / RVSP'},
+      {c:'IVC collapsibility'}
+    ]}
+  ];
+
+  /* ---------- build scene DOM ---------- */
+  var tlRow = document.getElementById('tlRow');
+  MILES.forEach(function(m){
+    var d=document.createElement('div'); d.className='mile';
+    d.innerHTML='<div class="yr">'+m.yr+'</div><div class="ti">'+m.ti+'</div><span class="vn">'+m.vn+'</span>';
+    tlRow.appendChild(d);
+  });
+
+  var covGrid=document.getElementById('covGrid');
+  DOMAINS.forEach(function(dm){
+    var card=document.createElement('div'); card.className='dom'+(dm.wide?' wide':'');
+    var chips='';
+    dm.items.forEach(function(it){
+      if(it.r){ var ref=REF[it.r]||{u:'#',c:''};
+        chips+='<a class="chip done" data-done="1" href="'+ref.u+'" target="_blank" rel="noopener noreferrer" title="'+ref.c+'">'+it.c+'</a>';
+      } else chips+='<span class="chip todo" title="'+(it.n||'On the roadmap — not yet automated')+'">'+it.c+'</span>';
+    });
+    card.innerHTML='<div class="dh">'+dm.d+'</div><div class="chips">'+chips+'</div>';
+    covGrid.appendChild(card);
+  });
+
+  /* ---------- scene engine ---------- */
+  var scenes=[].slice.call(document.querySelectorAll('.scene'));
+  var stage=document.getElementById('stage');
+  var pb=document.getElementById('pb');
+  var timeLbl=document.getElementById('timeLbl'), dotsWrap=document.getElementById('dots');
+  var playBtn=document.getElementById('playBtn'), playTxt=document.getElementById('playTxt'), playIco=document.getElementById('playIco');
+  var durs=scenes.map(function(s){return +s.dataset.dur||5000;});
+  var total=durs.reduce(function(a,b){return a+b;},0);
+  var cur=-1, elapsed=0, playing=false, last=0, raf=0, autoPaused=false;
+
+  // dots
+  var dots=scenes.map(function(s,i){
+    var b=document.createElement('button'); b.setAttribute('role','tab');
+    b.setAttribute('aria-label','Scene '+(i+1)+': '+s.dataset.tag);
+    b.addEventListener('click',function(){ go(i); cue('bell'); });
+    dotsWrap.appendChild(b); return b;
+  });
+
+  function fmt(ms){var s=Math.max(0,Math.round(ms/1000));return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);}
+  function pad(i){return ('0'+i).slice(-2);}
+
+  function activate(i){
+    scenes.forEach(function(s,k){ s.setAttribute('data-on', k===i?'1':'0'); });
+    dots.forEach(function(d,k){ d.setAttribute('aria-current', k===i?'true':'false'); });
+    runScene(i);
+  }
+
+  // per-scene animated content
+  var intervals=[], timeouts=[];
+  function clearTimers(){
+    intervals.forEach(function(t){clearInterval(t);}); intervals=[];
+    timeouts.forEach(function(t){clearTimeout(t);}); timeouts=[];
+  }
+  function later(fn,ms){ var t=setTimeout(fn,ms); timeouts.push(t); return t; }
+
+  function runScene(i){
+    clearTimers();
+    var t = scenes[i].dataset.tag;
+    // reset visual states of every scene's dynamic bits
+    document.querySelectorAll('.mile').forEach(function(m){m.classList.remove('on');});
+    document.getElementById('tlFill').style.width='0%';
+    document.querySelectorAll('.dom').forEach(function(d){d.classList.remove('on');});
+    document.querySelectorAll('.chip.done').forEach(function(c){c.classList.remove('on');});
+    document.getElementById('scaleNum').textContent='7,169';
+
+    if(t==='Milestones'){
+      var miles=document.querySelectorAll('.mile'), mi=0, fill=document.getElementById('tlFill');
+      var step=function(){
+        if(mi<miles.length){ miles[mi].classList.add('on'); mi++; fill.style.width=(mi/miles.length*100)+'%'; }
+        else clearInterval(iv);
+      };
+      if(reduce){ miles.forEach(function(m){m.classList.add('on');}); fill.style.width='100%'; }
+      else { step(); var iv=setInterval(step, 1150); intervals.push(iv); }
+    }
+    else if(t==='Scale'){
+      renderVBar(true); ensureScaleRO();
+      var el=document.getElementById('scaleNum'), t0=null, D=reduce?0:2600, from=7169, to=12124168;
+      if(reduce){ el.textContent=to.toLocaleString('en-US'); }
+      else {
+        var tick=function(ts){ if(!t0)t0=ts; var p=Math.min(1,(ts-t0)/D);
+          var e=1-Math.pow(1-p,3);
+          var v=Math.round(Math.pow(10, Math.log10(from)+(Math.log10(to)-Math.log10(from))*e));
+          el.textContent=v.toLocaleString('en-US');
+          if(p<1 && scenes[i].getAttribute('data-on')==='1') requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }
+    else if(t==='Coverage'){
+      var scn=scenes[i];
+      var doms=document.querySelectorAll('.dom');
+      scn.scrollTop=0;
+      if(reduce){ doms.forEach(function(d){d.classList.add('on');}); }
+      else { doms.forEach(function(d,k){ later(function(){ d.classList.add('on'); }, 120+k*90); }); }
+    }
+  }
+
+  function go(i){
+    i=Math.max(0,Math.min(scenes.length-1,i));
+    elapsed=0; for(var k=0;k<i;k++) elapsed+=durs[k];
+    cur=i; activate(i);
+  }
+
+  function setPlaying(p){
+    playing=p;
+    playTxt.textContent=p?'Pause':'Play';
+    playBtn.setAttribute('aria-label',p?'Pause':'Play');
+    playIco.innerHTML = p
+      ? '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'
+      : '<path d="M7 4v16l13-8z"/>';
+    if(raf){ cancelAnimationFrame(raf); raf=0; }
+    if(p){ last=performance.now(); raf=requestAnimationFrame(loop); }
+    syncMusic();
+  }
+
+  function loop(ts){
+    if(!playing) return;
+    var dt=ts-last; last=ts; elapsed+=dt;
+    if(elapsed>=total){ elapsed-=total; }   /* loop back to the start and keep playing */
+    render();
+    raf=requestAnimationFrame(loop);
+  }
+
+  function render(){
+    var acc=0, idx=0;
+    for(var k=0;k<durs.length;k++){ if(elapsed<acc+durs[k]){ idx=k; break; } acc+=durs[k]; idx=k; }
+    if(idx!==cur){ cur=idx; activate(idx); }
+    pb.style.width=(elapsed/total*100)+'%';
+    timeLbl.textContent=fmt(elapsed)+' / '+fmt(total);
+  }
+
+  playBtn.addEventListener('click',function(){
+    if(elapsed>=total){ go(0); setPlaying(true); }
+    else setPlaying(!playing);
+  });
+  document.getElementById('replayBtn').addEventListener('click',function(){ go(0); setPlaying(true); cue('bell'); });
+  stage.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'){ e.preventDefault(); go(cur+1); }
+    else if(e.key==='ArrowLeft'){ e.preventDefault(); go(cur-1); }
+    else if(e.key===' '){ e.preventDefault(); playBtn.click(); }
+  });
+
+  /* ---------- ambient waveform canvas ---------- */
+  var cv=document.getElementById('wave'), cx=cv.getContext('2d'), W=0,H=0,dpr=Math.min(2,window.devicePixelRatio||1);
+  function size(){ var r=cv.getBoundingClientRect(); W=r.width; H=r.height; cv.width=W*dpr; cv.height=H*dpr; cx.setTransform(dpr,0,0,dpr,0,0); }
+  window.addEventListener('resize', size); size();
+  var phase=0;
+  function beat(x){
+    var v=0;
+    v+=Math.exp(-Math.pow((x-0.16)/0.03,2))*0.18;
+    v-=Math.exp(-Math.pow((x-0.26)/0.012,2))*0.22;
+    v+=Math.exp(-Math.pow((x-0.30)/0.012,2))*1.0;
+    v-=Math.exp(-Math.pow((x-0.345)/0.016,2))*0.34;
+    v+=Math.exp(-Math.pow((x-0.55)/0.05,2))*0.28;
+    return v;
+  }
+  function draw(){
+    cx.clearRect(0,0,W,H);
+    var mid=H*0.82, amp=H*0.16, cycles=2.2, speed=0.0016;
+    phase=(phase+speed)% 1;
+    for(var t=0;t<2;t++){
+      cx.beginPath();
+      for(var px=0;px<=W;px+=2){
+        var u=(px/W)*cycles + phase*cycles + t*0.5;
+        var x=u - Math.floor(u);
+        var y=mid - beat(x)*amp*(t? .5:1);
+        if(px===0) cx.moveTo(px,y); else cx.lineTo(px,y);
+      }
+      cx.strokeStyle = t? 'rgba(140,21,21,0.10)' : 'rgba(15,118,110,0.18)';
+      cx.lineWidth = t?1:1.6; cx.stroke();
+    }
+    if(!reduce) requestAnimationFrame(draw);
+  }
+  if(reduce){ draw(); } else requestAnimationFrame(draw);
+
+  /* ---------- soundtrack — C-major bed in the "Heart by Ultrasound" voice (procedural Web Audio, no files; default on, mutable) ----------
+     Ported from that artifact's sound engine: I-V-vi-IV (C G Am F), one chord per 4-beat bar at a
+     resting ~70/min; a detuned-saw pad, a sine sub, a soft 132->47 Hz kick, off-beat hats, a
+     two-saw plucked arpeggio with a dotted-eighth ping-pong echo, side-chain "pump" ducking, a
+     convolution room and a soft-clip master. A soft bell marks a scene you pick. */
+  var actx=null, master=null, musicBus=null, verbIn=null, echoIn=null, echoTaps=[], noiseBuf=null, built=false;
+  var aTimer=0, aNext=0, aN=0, chord=0, unlocked=false, muted=false, lastBell=-1, bells=0;
+  var muteBtn=document.getElementById('muteBtn');
+  var SPB=60/70, LEVEL=1.4;
+  var MIX={kick:0.16, sub:[0.075,0.055], hat:0.06, pluck:[0.08,0.056], pad:0.08, cutoff:2200, width:0.55};
+  var CUE={bell:0.08};
+  var CHORDS=[
+    {pad:[48,52,55,60,64], root:36, arp:[72,76,79,83,84], bell:[79,76]},
+    {pad:[43,50,55,59,62], root:31, arp:[67,71,74,79,83], bell:[76,79]},
+    {pad:[45,52,57,60,64], root:33, arp:[69,72,76,79,81], bell:[76,69]},
+    {pad:[41,48,53,57,60], root:29, arp:[65,69,72,76,77], bell:[72,69]}
+  ];
+  var ARP=[0,2,1,3,2,4,3,1];
+  function hz(m){ return 440*Math.pow(2,(m-69)/12); }
+  function filt(type,f,q){ var b=actx.createBiquadFilter(); b.type=type; b.frequency.value=f; b.Q.value=q||0.707; return b; }
+  function osc(type,f){ var o=actx.createOscillator(); o.type=type; o.frequency.value=f; return o; }
+  function pan(p){ var s=actx.createStereoPanner?actx.createStereoPanner():actx.createGain(); if(s.pan) s.pan.value=Math.max(-1,Math.min(1,p)); return s; }
+  function route(node,p,dest,rev,dly){ var pn=pan(p); node.connect(pn).connect(dest);
+    if(rev){ var g=actx.createGain(); g.gain.value=rev; pn.connect(g).connect(verbIn); }
+    if(dly){ var g2=actx.createGain(); g2.gain.value=dly; pn.connect(g2).connect(echoIn); } }
+  function buildGraph(){
+    master=actx.createGain(); master.gain.value=0;
+    var hp=filt('highpass',28), clip=actx.createWaveShaper(), curve=new Float32Array(2049), i;
+    for(i=0;i<curve.length;i++) curve[i]=(0.85*Math.tanh(1.15*(i/1024-1)))/Math.tanh(1.15);
+    clip.curve=curve; clip.oversample='4x';
+    master.connect(hp).connect(clip).connect(actx.destination);
+    var s=70070, rnd=function(){ s=(s*1664525+1013904223)>>>0; return s/2147483648-1; };
+    noiseBuf=actx.createBuffer(1,actx.sampleRate,actx.sampleRate);
+    var d=noiseBuf.getChannelData(0); for(i=0;i<d.length;i++) d[i]=rnd();
+    var sr=actx.sampleRate, pre=Math.round(0.02*sr), len=Math.round(2.6*sr), ir=actx.createBuffer(2,pre+len,sr), c;
+    for(c=0;c<2;c++){ var h=ir.getChannelData(c), e=0, j;
+      for(j=0;j<len;j++){ var tt=j/sr; h[pre+j]=rnd()*Math.exp(-tt/0.62)*Math.min(1,tt/0.012); e+=h[pre+j]*h[pre+j]; }
+      var kk=1/Math.sqrt(e); for(j=0;j<len;j++) h[pre+j]*=kk; }
+    var conv=actx.createConvolver(); conv.normalize=false; conv.buffer=ir;
+    verbIn=actx.createGain(); var ret=actx.createGain(); ret.gain.value=0.9;
+    verbIn.connect(filt('lowpass',6000)).connect(conv).connect(filt('highpass',180)).connect(ret).connect(master);
+    echoIn=actx.createGain();
+    var dl=actx.createDelay(2), dr=actx.createDelay(2), fb=actx.createGain(), soft=filt('lowpass',4500), merge=actx.createChannelMerger(2), eo=actx.createGain();
+    fb.gain.value=0.38; eo.gain.value=0.8;
+    echoIn.connect(soft); soft.connect(dr); dr.connect(merge,0,1); dr.connect(dl); dl.connect(merge,0,0); dl.connect(fb).connect(dr); merge.connect(eo).connect(master);
+    echoTaps=[dl,dr];
+    musicBus=actx.createGain(); musicBus.connect(master);
+    var toVerb=actx.createGain(); toVerb.gain.value=0.25; musicBus.connect(toVerb).connect(verbIn);
+    built=true;
+  }
+  function kick(T,peak){ var o=osc('sine',132), g=actx.createGain();
+    o.frequency.setValueAtTime(132,T); o.frequency.setTargetAtTime(47,T,0.028);
+    g.gain.setValueAtTime(0,T); g.gain.linearRampToValueAtTime(peak,T+0.0015); g.gain.setTargetAtTime(0,T+0.0015,0.19);
+    o.connect(g).connect(master); o.start(T); o.stop(T+1.2);
+    hiss(T,'highpass',2500,0.25*peak,0.004,master,0); }
+  function hiss(T,type,f,peak,tau,dest,rev){ var src=actx.createBufferSource(), g=actx.createGain();
+    src.buffer=noiseBuf; var node=src.connect(filt(type,f));
+    var steep=(type==='highpass'&&f>5000); if(steep) node=node.connect(filt(type,f));
+    g.gain.setValueAtTime(peak,T); g.gain.setTargetAtTime(0,T,tau); node.connect(g);
+    route(g, steep?0.25:0, dest, rev||0, 0);
+    src.start(T,Math.random()*0.8); src.stop(T+8*tau+0.02); }
+  function hat(T,peak){ hiss(T,'highpass',7000,peak,0.045,master,0.05); }
+  function sub(T,m,d,peak){ var f=hz(m), a=osc('sine',f), b=osc('sine',2*f), bg=actx.createGain(), g=actx.createGain();
+    bg.gain.value=0.22;
+    g.gain.setValueAtTime(0,T); g.gain.linearRampToValueAtTime(peak,T+0.008); g.gain.setTargetAtTime(0.9*peak,T+0.008,0.04); g.gain.setTargetAtTime(0,T+d,0.025);
+    a.connect(g); b.connect(bg).connect(g); g.connect(musicBus);
+    a.start(T); a.stop(T+d+0.2); b.start(T); b.stop(T+d+0.2); }
+  function pluck(T,m,peak,p){ var f=hz(m), mix=actx.createGain(), a=osc('sawtooth',f), b=osc('sawtooth',f*1.004), ag=actx.createGain(), bg=actx.createGain();
+    ag.gain.value=0.6; bg.gain.value=0.4; a.connect(ag).connect(mix); b.connect(bg).connect(mix);
+    var bright=actx.createGain(), dark=actx.createGain(), sum=actx.createGain();
+    bright.gain.setValueAtTime(0,T); bright.gain.linearRampToValueAtTime(0.7*peak,T+0.002); bright.gain.setTargetAtTime(0,T+0.002,0.045);
+    dark.gain.setValueAtTime(0,T); dark.gain.linearRampToValueAtTime(peak,T+0.002); dark.gain.setTargetAtTime(0,T+0.002,0.16);
+    mix.connect(filt('lowpass',5200)).connect(bright).connect(sum);
+    mix.connect(filt('lowpass',1100)).connect(dark).connect(sum);
+    route(sum,p,musicBus,0.2,0.35);
+    a.start(T); a.stop(T+1.1); b.start(T); b.stop(T+1.1); }
+  function mPad(T,notes,d,cutoff){ notes.forEach(function(m){
+    var lp=filt('lowpass',cutoff), g=actx.createGain(), peak=MIX.pad;
+    [-13,-6,0,6,13].forEach(function(cent){ var o=osc('sawtooth',hz(m)), og=actx.createGain(); o.detune.value=cent; og.gain.value=0.2; o.connect(og).connect(lp); o.start(T); o.stop(T+d+0.6); });
+    g.gain.setValueAtTime(0,T); g.gain.linearRampToValueAtTime(peak,T+0.2); g.gain.linearRampToValueAtTime(0.75*peak,T+0.8);
+    g.gain.setValueAtTime(0.75*peak,T+Math.max(0.8,d)); g.gain.linearRampToValueAtTime(0,T+d+0.5);
+    lp.connect(g); route(g, MIX.width*((m%5)-2)*0.28, musicBus, 0.35, 0);
+  }); }
+  function chime(T,f,peak,p,dur){ var car=osc('sine',f), mod=osc('sine',3.5*f), depth=actx.createGain(), amp=actx.createGain(), oct=osc('sine',2*f), og=actx.createGain(), sum=actx.createGain();
+    depth.gain.setValueAtTime(2.2*3.5*f,T); depth.gain.setTargetAtTime(0,T,0.25); mod.connect(depth).connect(car.frequency);
+    amp.gain.setValueAtTime(0,T); amp.gain.linearRampToValueAtTime(peak,T+0.002); amp.gain.setTargetAtTime(0,T+0.002,0.42);
+    og.gain.setValueAtTime(0,T); og.gain.linearRampToValueAtTime(0.3*peak,T+0.002); og.gain.setTargetAtTime(0,T+0.002,0.2);
+    car.connect(amp).connect(sum); oct.connect(og).connect(sum); route(sum,p,master,0.4,0);
+    car.start(T); car.stop(T+dur); mod.start(T); mod.stop(T+dur); oct.start(T); oct.stop(T+dur); }
+  function pump(T,P){ var g=musicBus.gain; g.setValueAtTime(1,T); g.linearRampToValueAtTime(0.45,T+0.01); g.setTargetAtTime(1,T+0.02,Math.min(0.11,0.15*P)); }
+  function mBeat(T,P,k){ var bar=k%4, e=P/2, j; chord=Math.floor(k/4)%4; var C=CHORDS[chord];
+    echoTaps.forEach(function(t){ t.delayTime.setTargetAtTime(0.75*P,T,0.05); });
+    kick(T,MIX.kick); pump(T,P); hat(T+e,MIX.hat);
+    sub(T,C.root,0.85*e,MIX.sub[0]); sub(T+e,C.root,0.85*e,MIX.sub[1]);
+    for(j=0;j<2;j++){ var i=2*bar+j; pluck(T+j*e, C.arp[ARP[i]%5], MIX.pluck[i%4===0?0:1], MIX.width*0.35*Math.sin(i*0.9)); }
+    if(bar===0) mPad(T,C.pad,4*P,MIX.cutoff);
+  }
+  function aSchedule(){ if(!actx) return; var now=actx.currentTime;
+    if(aNext<now) aNext=now+0.05;
+    while(aNext<now+0.2){ mBeat(aNext,SPB,aN++); aNext+=SPB; } }
+  function startMusic(){ if(aTimer||!built) return;
+    if(actx.state==='suspended') actx.resume();
+    master.gain.cancelScheduledValues(actx.currentTime); master.gain.setTargetAtTime(LEVEL,actx.currentTime,0.08);
+    aNext=actx.currentTime+0.1; aN=0;
+    aTimer=setInterval(aSchedule,25); }
+  function stopMusic(){ if(aTimer){ clearInterval(aTimer); aTimer=0; }
+    if(actx&&master){ master.gain.cancelScheduledValues(actx.currentTime); master.gain.setTargetAtTime(0,actx.currentTime,0.05);
+      setTimeout(function(){ if(!aTimer && actx && actx.state==='running') actx.suspend(); },320); } }
+  function syncMusic(){ if(unlocked && playing && !muted){ startMusic(); } else { stopMusic(); } }
+  // A soft bell on the chord that plays, for a scene you pick (the source's "cue").
+  function cue(kind){ if(!actx||!aTimer||actx.state!=='running') return; var T=actx.currentTime+0.02;
+    if(kind==='bell'){ if(T-lastBell<0.25) return; lastBell=T; var notes=CHORDS[chord].bell; chime(T,hz(notes[bells++%notes.length]),CUE.bell,0,1.3); } }
+  function setMute(m){
+    muted=m;
+    if(muteBtn){ muteBtn.setAttribute('aria-pressed', m?'true':'false');
+      muteBtn.setAttribute('aria-label', m?'Unmute music':'Mute music');
+      muteBtn.classList.toggle('muted', m);
+      var ic=document.getElementById('muteIco'), tx=document.getElementById('muteTxt');
+      if(ic){ ic.innerHTML = m
+        ? '<path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M22 9.5l-5 5M17 9.5l5 5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'
+        : '<path d="M3 9v6h4l5 5V4L7 9H3z"/><path d="M16 8.6a4 4 0 0 1 0 6.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/>'; }
+      if(tx){ tx.textContent = m?'Muted':'Music'; }
+    }
+    syncMusic();
+  }
+  function unlockAudio(){
+    if(unlocked) return;
+    try{ actx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return; }
+    buildGraph();
+    try{ var b=actx.createBuffer(1,1,22050); var s=actx.createBufferSource(); s.buffer=b; s.connect(actx.destination); s.start(0); }catch(e){}
+    if(actx.state==='suspended'){ actx.resume(); }
+    unlocked=true; syncMusic();
+  }
+  if(muteBtn){ muteBtn.addEventListener('click',function(){ unlockAudio(); setMute(!muted); }); }
+  // Default on, but browsers block sound until a gesture — start the soundtrack on the first interaction.
+  function firstGesture(){ unlockAudio();
+    document.removeEventListener('pointerdown',firstGesture); document.removeEventListener('keydown',firstGesture); document.removeEventListener('touchstart',firstGesture); }
+  document.addEventListener('pointerdown',firstGesture,{passive:true});
+  document.addEventListener('keydown',firstGesture);
+  document.addEventListener('touchstart',firstGesture,{passive:true});
+  setMute(false);
+
+  /* ---------- boot ---------- */
+  go(0);
+  if(reduce){ setPlaying(false); render(); }
+  else { setPlaying(true); }
+
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){ if(playing){ autoPaused=true; setPlaying(false); } }
+    else if(autoPaused){ autoPaused=false; setPlaying(true); }
+  });
+})();
+</script>
+
+<script>
+/* Report our height to a hosting page (index.html) so the iframe can size itself. */
+(function(){
+  "use strict";
+  function h(){
+    // Measure the body content box (auto height) — NOT documentElement.scrollHeight,
+    // which is floored at the iframe viewport height and so can never report a shrink.
+    var b=document.body;
+    if(!b) return Math.ceil(document.documentElement.getBoundingClientRect().height);
+    return Math.ceil(Math.max(b.scrollHeight, b.offsetHeight, b.getBoundingClientRect().bottom));
+  }
+  var lastH=0;
+  function post(){
+    try{
+      var v=h();
+      if(v && v!==lastH){ lastH=v; parent.postMessage({labFilm:'height', height:v}, '*'); }
+    }catch(e){}
+  }
+  window.addEventListener('load', post);
+  window.addEventListener('resize', post);
+  // settle after fonts/layout
+  [200,600,1400].forEach(function(ms){ setTimeout(post, ms); });
+})();
+</script>
+</body>
+</html>

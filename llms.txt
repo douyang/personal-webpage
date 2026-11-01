@@ -1,0 +1,42 @@
+# David Ouyang
+
+> David Ouyang is a cardiologist and researcher building AI for cardiovascular imaging and echocardiography. He is a cardiologist in the Division of Research at Kaiser Permanente Northern California and an adjunct Assistant Professor at the Smidt Heart Institute at Cedars-Sinai Medical Center. He is a co-founder of InVision Medical Technology, which builds FDA-cleared AI for echocardiography. ORCID: 0000-0002-3813-7518.
+
+## Role
+- Cardiologist, Division of Research, Kaiser Permanente Northern California.
+- Adjunct Assistant Professor, Smidt Heart Institute, Cedars-Sinai Medical Center.
+- Co-founder, InVision Medical Technology (Y Combinator-backed).
+- Education: BA in Statistics, Rice University; MD, University of California, San Francisco; internal medicine, cardiology, and a computer science and biomedical data science postdoc, Stanford University.
+
+## Research
+The Ouyang Lab improves cardiovascular diagnosis and disease detection with computer vision and artificial intelligence. The work has three pillars: AI model development (precision phenotyping), AI model understanding (interpretable medical AI), and AI model deployment (clinical trials). The lab conducted the first blinded, randomized trial of AI in cardiology. Its echocardiography models are FDA-cleared and deployed in clinical care. Publications include Nature, Nature Medicine, NEJM AI, Circulation, JAMA Cardiology, and the European Heart Journal.
+
+## Selected publications
+- Vukadinovic M, et al. "Comprehensive echocardiogram evaluation with view primed vision language AI." Nature. https://www.nature.com/articles/s41586-025-09850-x
+- He B, et al. "Blinded, Randomized Controlled Trial of Sonographer vs. Artificial Intelligence Assessment of Cardiac Function." Nature. https://www.nature.com/articles/s41586-023-05947-3
+- Ouyang D, et al. "Video-based artificial intelligence for beat-to-beat assessment of cardiac function." Nature. https://www.nature.com/articles/s41586-020-2145-8
+- Christensen M, et al. "Vision-language foundation model for echocardiogram interpretation." Nature Medicine. https://www.nature.com/articles/s41591-024-02959-y
+- Full list: https://douyang.org/publications.html and https://scholar.google.com/citations?user=on2DUKoAAAAJ&hl=en
+
+## Clinical trials
+- AI ECHO INSIGHT, Co-Principal Investigator. NCT07229300 (2025-present).
+- ECHONET-LVH-RCT, Principal Investigator. NCT05791227 (2025-present).
+- ECHONET-SCREENING, Co-Principal Investigator. NCT06664866 (2024-present).
+- ECHONET-RCT, Principal Investigator. NCT05140642 (2022; published in Nature).
+
+## InVision Medical Technology
+- Precision LVEF: FDA 510(k) cleared (2024, K232331).
+- Precision Cardiac Amyloid: FDA 510(k) cleared (2025, K243866), with FDA Breakthrough Device designation (2024).
+- Medicare New Technology Add-on Payment for Precision Cardiac Amyloid, up to $2,275 per inpatient stay, effective October 2026.
+- Company site: https://invisionmedtech.com/
+
+## Links
+- Website: https://douyang.org/
+- Lab and publications: https://douyang.github.io/
+- Google Scholar: https://scholar.google.com/citations?user=on2DUKoAAAAJ&hl=en
+- GitHub: https://github.com/douyang
+- ORCID: https://orcid.org/0000-0002-3813-7518
+- X: https://x.com/David_Ouyang
+- LinkedIn: https://www.linkedin.com/in/davidouyang/
+- Substack: https://intentionalintelligence.substack.com/
+- Intro to Echo: https://intro2echo.com
