@@ -2,6 +2,14 @@
 
 > David Ouyang is a cardiologist and researcher building AI for cardiovascular imaging and echocardiography. He is a cardiologist in the Division of Research at Kaiser Permanente Northern California and an adjunct Assistant Professor at the Smidt Heart Institute at Cedars-Sinai Medical Center. He is a co-founder of InVision Medical Technology, which builds FDA-cleared AI for echocardiography. ORCID: 0000-0002-3813-7518.
 
+## Frequently asked questions
+- Who is David Ouyang? David Ouyang, MD, is a cardiologist and researcher building artificial intelligence for echocardiography, in the Division of Research at Kaiser Permanente Northern California and as an adjunct Assistant Professor at the Smidt Heart Institute at Cedars-Sinai Medical Center.
+- What is he known for? Creating the open-source EchoNet datasets and models, leading the first blinded randomized controlled trial of AI in cardiology (Nature, 2023), and co-founding InVision Medical Technology, which builds FDA-cleared AI for echocardiography.
+- What is EchoNet? A family of open-source echocardiography datasets and deep-learning models (EchoNet-Dynamic, EchoCLIP, EchoPrime) at github.com/echonet.
+- Where did he train? BA in statistics at Rice University; MD at UCSF; internal medicine residency and cardiology fellowship; postdoc in computer science and biomedical data science at Stanford University.
+- Is his AI used in clinical care? Yes — his echocardiography models are FDA-cleared and deployed in routine care; InVision's Precision LVEF (K232331, 2024) and Precision Cardiac Amyloid (K243866, 2025) are FDA 510(k)-cleared.
+- How to contact or collaborate? Email david.ouyang@gmail.com.
+
 ## Role
 - Cardiologist, Division of Research, Kaiser Permanente Northern California.
 - Adjunct Assistant Professor, Smidt Heart Institute, Cedars-Sinai Medical Center.

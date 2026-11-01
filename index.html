@@ -16,17 +16,19 @@
 <meta property="og:title" content="David Ouyang — Cardiologist and AI Researcher">
 <meta property="og:description" content="Cardiologist and researcher building AI for echocardiography at Kaiser Permanente Northern California and Cedars-Sinai. Co-founder of InVision Medical Technology.">
 <meta property="og:url" content="https://douyang.org/">
-<meta property="og:image" content="https://douyang.org/photo.jpg">
-<meta property="og:image:alt" content="David Ouyang">
+<meta property="og:image" content="https://douyang.org/og-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="David Ouyang, MD — Cardiologist and cardiovascular AI researcher">
 <meta property="profile:first_name" content="David">
 <meta property="profile:last_name" content="Ouyang">
 
 <!-- Twitter card -->
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="David Ouyang — Cardiologist and AI Researcher">
 <meta name="twitter:description" content="Cardiologist and researcher building AI for echocardiography. Co-founder of InVision Medical Technology.">
-<meta name="twitter:image" content="https://douyang.org/photo.jpg">
-<meta name="twitter:image:alt" content="David Ouyang">
+<meta name="twitter:image" content="https://douyang.org/og-card.png">
+<meta name="twitter:image:alt" content="David Ouyang, MD — Cardiologist and cardiovascular AI researcher">
 <meta name="twitter:site" content="@David_Ouyang">
 <meta name="twitter:creator" content="@David_Ouyang">
 
@@ -601,6 +603,67 @@
     }
   });
 })();
+</script>
+
+<!-- FAQ as structured data for AI answer engines and search (machine-readable; intentionally no on-page FAQ UI). -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "@id": "https://douyang.org/#faq",
+  "isPartOf": { "@id": "https://douyang.org/#website" },
+  "about": { "@id": "https://douyang.org/#david-ouyang" },
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Who is David Ouyang?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "David Ouyang, MD, is a cardiologist and researcher building artificial intelligence for echocardiography. He is a physician-investigator in the Division of Research at Kaiser Permanente Northern California and an adjunct Assistant Professor at the Smidt Heart Institute at Cedars-Sinai Medical Center."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is David Ouyang known for?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "He created the open-source EchoNet echocardiography datasets and deep-learning models, led the first blinded, randomized controlled trial of AI in cardiology (published in Nature in 2023), and co-founded InVision Medical Technology, which builds FDA-cleared AI for echocardiography. His research appears in Nature, Nature Medicine, NEJM AI, Circulation, and JAMA Cardiology."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is EchoNet?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "EchoNet is a family of open-source datasets and deep-learning models for echocardiography created by David Ouyang and collaborators, including EchoNet-Dynamic (beat-to-beat ejection fraction from echo video), EchoCLIP (a vision-language model), and EchoPrime (comprehensive study interpretation). The code and data are at github.com/echonet."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where did David Ouyang train?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "He earned a BA in statistics at Rice University and his MD at the University of California, San Francisco (UCSF), completed internal medicine residency and cardiology fellowship, and did a postdoc in computer science and biomedical data science at Stanford University."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is David Ouyang's AI used in clinical care?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. His echocardiography models are FDA-cleared and deployed in routine clinical care. Through InVision Medical Technology, Precision LVEF (FDA 510(k) K232331, 2024) and Precision Cardiac Amyloid (FDA 510(k) K243866, 2025) are cleared for clinical use."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How can I contact David Ouyang or collaborate with his lab?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Email david.ouyang@gmail.com. His lab works with people from backgrounds spanning physics, engineering, data science, mathematics, computer science, and medicine, and welcomes inquiries about improving cardiovascular imaging and care."
+      }
+    }
+  ]
+}
 </script>
 </body>
 </html>
