@@ -2,8 +2,9 @@
 
 Source for [douyang.org](https://douyang.org/), the personal site of David Ouyang.
 
-Static site served by GitHub Pages (`CNAME` -> douyang.org). Mirrors the content of
-[douyang.github.io](https://douyang.github.io/).
+Static site served by GitHub Pages (`CNAME` -> douyang.org). douyang.org is the canonical
+site; [douyang.github.io](https://douyang.github.io/) is a secondary mirror whose pages
+canonicalize here.
 
 ## Pages
 - `index.html` — homepage (bio, research, publications, trials, honors, service, InVision).
