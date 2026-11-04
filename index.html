@@ -32,7 +32,7 @@
 <meta name="twitter:site" content="@David_Ouyang">
 <meta name="twitter:creator" content="@David_Ouyang">
 
-<!-- Machine-readable identity for search and AI answer engines. Facts mirror douyang.github.io. -->
+<!-- Machine-readable identity for search and AI answer engines. douyang.org is canonical; douyang.github.io mirrors it. -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -71,7 +71,10 @@
         "https://orcid.org/0000-0002-3813-7518",
         "https://scholar.google.com/citations?user=on2DUKoAAAAJ&hl=en",
         "https://www.linkedin.com/in/davidouyang/",
-        "https://intentionalintelligence.substack.com/"
+        "https://intentionalintelligence.substack.com/",
+        "https://github.com/echonet",
+        "https://divisionofresearch.kaiserpermanente.org/researchers/ouyang-david/",
+        "https://researchers.cedars-sinai.edu/David.Ouyang/"
       ]
     },
     {
@@ -89,6 +92,15 @@
       "isPartOf": { "@id": "https://douyang.org/#website" },
       "about": { "@id": "https://douyang.org/#david-ouyang" },
       "mainEntity": { "@id": "https://douyang.org/#david-ouyang" }
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://github.com/echonet",
+      "name": "EchoNet",
+      "description": "Open-source datasets and deep-learning models for echocardiography, including EchoNet-Dynamic, EchoCLIP, and EchoPrime.",
+      "codeRepository": "https://github.com/echonet",
+      "programmingLanguage": "Python",
+      "author": { "@id": "https://douyang.org/#david-ouyang" }
     }
   ]
 }
@@ -148,6 +160,16 @@
 
   a:hover {
     color: var(--color-primary-hover);
+    text-decoration: underline;
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .section-content a {
     text-decoration: underline;
   }
 
@@ -408,7 +430,7 @@
   <!-- Header -->
   <header class="header">
     <div class="header-photo">
-      <img src="photo.jpg" alt="David Ouyang">
+      <img src="photo.jpg" alt="David Ouyang" width="160" height="160" decoding="async">
     </div>
     <div class="header-info">
       <h1>David Ouyang</h1>
@@ -434,12 +456,12 @@
   <section class="film-block" aria-label="Ouyang Lab research overview">
     <iframe id="lab-film-frame" class="film-frame"
             title="Ouyang Lab research film: research direction, milestones, training-data scale, and echocardiography-task coverage"
-            src="research-film.html" scrolling="no" loading="eager"></iframe>
+            src="research-film.html" scrolling="no" loading="lazy"></iframe>
   </section>
 
   <!-- About -->
   <section class="section">
-    <div class="section-label">About</div>
+    <h2 class="section-label">About</h2>
     <div class="section-content">
       <p>I am a cardiologist and researcher in the <a href="https://divisionofresearch.kaiserpermanente.org/researchers/ouyang-david/">Division of Research</a> at Kaiser Permanente Northern California and an adjunct <a href="https://researchers.cedars-sinai.edu/David.Ouyang/">Assistant Professor</a> at the Smidt Heart Institute at Cedars-Sinai. I majored in statistics at Rice University, obtained my MD at UCSF, and received post-graduate medical education in internal medicine, cardiology, and a postdoc in computer science and biomedical data science at Stanford University.</p>
     </div>
@@ -447,7 +469,7 @@
 
   <!-- Research / Lab Members -->
   <section class="section">
-    <div class="section-label">Research</div>
+    <h2 class="section-label">Research</h2>
     <div class="section-content">
       <p>Our mission is to improve cardiovascular diagnosis and disease detection using computer vision and artificial intelligence. We focus on three pillars: <strong>AI model development</strong> (precision phenotyping), <strong>AI model understanding</strong> (interpretable medical AI), and <strong>AI model deployment</strong> (clinical trials). Our work has been published in <em>Nature</em>, <em>Nature Medicine</em>, <em>NEJM AI</em>, <em>Circulation</em>, <em>JAMA Cardiology</em>, and the <em>European Heart Journal</em>. We conducted the first <a href="https://www.nature.com/articles/s41586-023-05947-3">blinded, randomized trial of AI in cardiology</a>, and our echocardiography models are now FDA-cleared and deployed in clinical care.</p>
       <p>The best part of the job are the people I get to work with. I have the good fortune of working with a great group of motivated, talented, and creative individuals from a wide range of backgrounds. Our lab members bring expertise from a wide range of backgrounds ranging from physics, mechanical engineering, data science, math, and computer science to cardiology, anesthesia, and internal medicine.</p>
@@ -455,7 +477,7 @@
       <div class="members-group">
         <h3>Current Members</h3>
         <table class="members-table">
-          <thead><tr><th>Name</th><th>Role</th></tr></thead>
+          <thead><tr><th scope="col">Name</th><th scope="col">Role</th></tr></thead>
           <tbody>
             <tr><td>Milos Vukadinovic</td><td>UCLA Bioengineering PhD Student</td></tr>
             <tr><td>Yuki Sahashi</td><td>Postdoctoral Fellow, Cardiologist</td></tr>
@@ -478,7 +500,7 @@
       <div class="members-group">
         <h3>Alumni</h3>
         <table class="members-table">
-          <thead><tr><th>Name</th><th>Role</th><th>Now</th></tr></thead>
+          <thead><tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Now</th></tr></thead>
           <tbody>
             <tr><td>Kai Christensen</td><td>Software Engineer</td><td>Roboflow</td></tr>
             <tr><td>Christina Binder-Rodriguez</td><td>Research Fellow</td><td>Cardiologist, Medical University of Vienna</td></tr>
@@ -504,7 +526,7 @@
 
   <!-- Publications -->
   <section class="section">
-    <div class="section-label">Publications</div>
+    <h2 class="section-label">Publications</h2>
     <div class="section-content">
 
       <p>A selection of papers below. For the full list, see the <a href="publications.html">complete publications page</a>.</p>
@@ -515,7 +537,7 @@
         <li><span class="authors">Christensen M, Vukadinovic M, Yuan N, Ouyang D.</span> <a href="https://www.nature.com/articles/s41591-024-02959-y">"Vision–language foundation model for echocardiogram interpretation."</a> <span class="venue">Nature Medicine.</span></li>
         <li><span class="authors">Wu E, Wu K, Daneshjou R, Ouyang D, Ho D, Zou JY.</span> <a href="https://www.nature.com/articles/s41591-021-01312-x">"How medical AI devices are evaluated: limitations and recommendations from an analysis of FDA approvals."</a> <span class="venue">Nature Medicine.</span></li>
         <li><span class="authors">Vrudhula A, Duffy G, Vukadinovic M, Liang D, Cheng S, Ouyang D.</span> <a href="https://www.ahajournals.org/doi/10.1161/CIRCULATIONAHA.124.069047">"High Throughput Deep Learning Detection of Mitral Regurgitation."</a> <span class="venue">Circulation.</span></li>
-        <li><span class="authors">Duffy G*, Cheng PP*, Yuan*, He B, Kwan AC, Shun-Shin MJ, Alexander KM, Ebinger J, Lungren MP, Rader F, Liang DH, Schnittger I, Ashley EA, Zou JY, Patel J, Witteles R, Cheng S, Ouyang D.</span> <a href="https://jamanetwork.com/journals/jamacardiology/fullarticle/2789370">"High-Throughput Precision Phenotyping of Left Ventricular Hypertrophy With Cardiovascular Deep Learning."</a> <span class="venue">JAMA Cardiology.</span></li>
+        <li><span class="authors">Duffy G*, Cheng PP*, Yuan N*, He B, Kwan AC, Shun-Shin MJ, Alexander KM, Ebinger J, Lungren MP, Rader F, Liang DH, Schnittger I, Ashley EA, Zou JY, Patel J, Witteles R, Cheng S, Ouyang D.</span> <a href="https://jamanetwork.com/journals/jamacardiology/fullarticle/2789370">"High-Throughput Precision Phenotyping of Left Ventricular Hypertrophy With Cardiovascular Deep Learning."</a> <span class="venue">JAMA Cardiology.</span></li>
         <li><span class="authors">Sahashi Y, Vukadinovic M, Amrollahi F, Trivedi H, Rhee J, Chen JH, Cheng S, Ouyang D, Kwan AC.</span> <a href="https://ai.nejm.org/doi/full/10.1056/AIoa2400948">"Opportunistic Screening of Chronic Liver Disease with Deep Learning Enhanced Echocardiography."</a> <span class="venue">NEJM AI.</span></li>
       </ul>
 
@@ -525,7 +547,7 @@
 
   <!-- Clinical Trials -->
   <section class="section">
-    <div class="section-label">Clinical Trials</div>
+    <h2 class="section-label">Clinical Trials</h2>
     <div class="section-content">
       <p>We run prospective trials to test whether AI actually improves cardiovascular care &mdash; from the first blinded randomized trial of AI in cardiology to health-system deployment studies.</p>
       <ul class="pub-list">
@@ -540,7 +562,7 @@
 
   <!-- Honors -->
   <section class="section">
-    <div class="section-label">Honors</div>
+    <h2 class="section-label">Honors</h2>
     <div class="section-content">
       <ul class="pub-list">
         <li>Elected Member, <strong>American Society for Clinical Investigation</strong> (ASCI) &mdash; 2026.</li>
@@ -554,7 +576,7 @@
 
   <!-- Service -->
   <section class="section">
-    <div class="section-label">Service</div>
+    <h2 class="section-label">Service</h2>
     <div class="section-content">
       <div class="pub-category">Committees &amp; Leadership</div>
       <ul class="pub-list">
@@ -576,7 +598,7 @@
 
   <!-- InVision -->
   <section class="section">
-    <div class="section-label">InVision</div>
+    <h2 class="section-label">InVision</h2>
     <div class="section-content">
       <p>I am a co-founder of <a href="https://invisionmedtech.com/">InVision Medical Technology</a>, a Y&nbsp;Combinator&ndash;backed company building FDA-cleared AI for echocardiography &mdash; the path by which our research models reach routine clinical care.</p>
       <ul class="pub-list">

@@ -31,16 +31,24 @@ The Ouyang Lab improves cardiovascular diagnosis and disease detection with comp
 - ECHONET-LVH-RCT, Principal Investigator. NCT05791227 (2025-present).
 - ECHONET-SCREENING, Co-Principal Investigator. NCT06664866 (2024-present).
 - ECHONET-RCT, Principal Investigator. NCT05140642 (2022; published in Nature).
+- SCOUT ECHO-AI, Principal Investigator. NCT07216859 (planned 2028).
 
 ## InVision Medical Technology
 - Precision LVEF: FDA 510(k) cleared (2024, K232331).
 - Precision Cardiac Amyloid: FDA 510(k) cleared (2025, K243866), with FDA Breakthrough Device designation (2024).
 - Medicare New Technology Add-on Payment for Precision Cardiac Amyloid, up to $2,275 per inpatient stay, effective October 2026.
+- Precision Cirrhosis: FDA Breakthrough Device designation for AI detection of end-stage liver disease from echocardiography.
 - Company site: https://invisionmedtech.com/
+
+## Honors and service
+- Elected Member, American Society for Clinical Investigation (ASCI), 2026.
+- Deputy Editor, NEJM AI.
+- Chair, ImageGuideEcho Registry, American Society of Echocardiography; Artificial Intelligence Task Force.
+- Bay Area Board of Directors, American Heart Association.
 
 ## Links
 - Website: https://douyang.org/
-- Lab and publications: https://douyang.github.io/
+- EchoNet (open-source models and data): https://github.com/echonet
 - Google Scholar: https://scholar.google.com/citations?user=on2DUKoAAAAJ&hl=en
 - GitHub: https://github.com/douyang
 - ORCID: https://orcid.org/0000-0002-3813-7518
